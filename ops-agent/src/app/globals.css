@@ -1,0 +1,93 @@
+:root {
+  --background: #111111;
+  --foreground: #ededed;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+main {
+  min-height: 100vh;
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ops-agent {
+  width: min(900px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 64px 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.ops-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.ops-header h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.ops-header p {
+  font-size: 1.25rem;
+  color: #a0a0a0;
+}
+
+.ops-btn {
+  background: transparent;
+  color: #ededed;
+  border: 1px solid #333333;
+  padding: 10px 24px;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ops-btn:hover:not(:disabled) {
+  background: #222222;
+  border-color: #555555;
+}
+
+.ops-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ops-events {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.ops-report-box {
+  margin-top: 32px;
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #d1d1d1;
+  text-align: left;
+  width: 100%;
+}
