@@ -1,0 +1,25 @@
+{
+  "name": "ai-agent-homework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idan-asherov/ai-agent-investigation-homework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/idan-asherov/ai-agent-investigation-homework/issues"
+  },
+  "homepage": "https://github.com/idan-asherov/ai-agent-investigation-homework#readme",
+  "type": "module",
+  "dependencies": {
+    "@openai/agents": "^0.20.0",
+    "zod": "^4.6.5"
+  }
+}
