@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend/payment-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - FAULT=off
+      - MONGODB_URI=mongodb+srv://idanasherov_db_user:ptOK2m8EsIdttb8k@cluster0.qm94ulj.mongodb.net/agent-inv?retryWrites=true&w=majority
+    restart: unless-stopped
+
+  ops-agent:
+    build:
+      context: ./ops-agent
+    ports:
+      - "3000:3000"
+    environment:
+      - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
+      - OPENAI_API_KEY=ollama
+      - DEMO_SERVICE_URL=http://backend:5002
+      - MONGODB_URI=mongodb+srv://idanasherov_db_user:ptOK2m8EsIdttb8k@cluster0.qm94ulj.mongodb.net/agent-inv?retryWrites=true&w=majority
+    depends_on:
+      - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
