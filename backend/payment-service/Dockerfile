@@ -1,7 +1,8 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --production
-COPY . .
+RUN npm ci --omit=dev
+COPY server.js ./
+USER node
 EXPOSE 5002
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

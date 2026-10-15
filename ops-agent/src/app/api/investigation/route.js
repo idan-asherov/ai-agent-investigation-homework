@@ -1,6 +1,9 @@
 import { run } from "@openai/agents";
-import opsAgent from "@/lib/agent.js";
+import opsAgent, { translator } from "@/lib/agent.js";
 import { saveInvestigation } from "@/lib/db.js";
+
+const PROMPT = "Investigate payment-service and determine its current state.";
+const hasCJK = (t) => /[\u3400-\u9fff]/.test(t || "");
 
 export async function POST(req) {
   const encoder = new TextEncoder();
@@ -15,7 +18,7 @@ export async function POST(req) {
       let currentTool = "";
 
       try {
-        const result = await run(opsAgent, "חקור את שירות ה-orders-api ובדוק מה מצבו.", {
+        const result = await run(opsAgent, PROMPT, {
           stream: true,
           maxTurns: 6,
           signal: AbortSignal.any([
@@ -43,7 +46,21 @@ export async function POST(req) {
           throw new Error("החקירה נעצרה עקב ניתוק דפדפן או חריגת זמן");
         }
 
-        const report = result.finalOutput || "לא התקבל דו\"ח מסכם.";
+        const english = result.finalOutput || "";
+        let report = english || "לא התקבל דו\"ח מסכם.";
+
+        // Stage 2: translate to Hebrew; retry once if the model drifts into Chinese
+        if (english) {
+          send({ type: "tool_called", tool: "translate_to_hebrew" });
+          let hebrew = (await run(translator, english, { maxTurns: 2, signal: AbortSignal.timeout(60000) })).finalOutput;
+          if (!hebrew || hasCJK(hebrew)) {
+            hebrew = (await run(translator, "Translate to Hebrew ONLY, no Chinese:\n\n" + english, { maxTurns: 2, signal: AbortSignal.timeout(60000) })).finalOutput;
+          }
+          report = hebrew && !hasCJK(hebrew)
+            ? hebrew
+            : "⚠️ התרגום לעברית נכשל. הדוח באנגלית:\n\n" + english;
+        }
+
         send({ type: "report", report });
 
         if (typeof saveInvestigation === "function") {
@@ -54,7 +71,7 @@ export async function POST(req) {
           }).catch((err) => console.error("DB Save Error:", err.message));
         }
       } catch (error) {
-        send({ type: "error", error: error.message });
+        send({ type: "error", message: error.message });
       } finally {
         controller.close();
       }

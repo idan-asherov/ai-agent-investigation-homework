@@ -2,26 +2,34 @@ services:
   backend:
     build:
       context: ./backend/payment-service
+    env_file:
+      - ./backend/payment-service/.env
+    environment:
+      PORT: "5002"
     ports:
       - "5002:5002"
-    environment:
-      - PORT=5002
-      - FAULT=off
-      - MONGODB_URI=mongodb+srv://idanasherov_db_user:ptOK2m8EsIdttb8k@cluster0.qm94ulj.mongodb.net/agent-inv?retryWrites=true&w=majority
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     restart: unless-stopped
 
   ops-agent:
     build:
       context: ./ops-agent
+    env_file:
+      - ./ops-agent/.env
+    environment:
+      PORT: "3000"
+      PAYMENT_SERVICE_URL: http://backend:5002
+      OPENAI_BASE_URL: http://host.docker.internal:11434/v1
     ports:
       - "3000:3000"
-    environment:
-      - OPENAI_BASE_URL=http://host.docker.internal:11434/v1
-      - OPENAI_API_KEY=ollama
-      - DEMO_SERVICE_URL=http://backend:5002
-      - MONGODB_URI=mongodb+srv://idanasherov_db_user:ptOK2m8EsIdttb8k@cluster0.qm94ulj.mongodb.net/agent-inv?retryWrites=true&w=majority
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

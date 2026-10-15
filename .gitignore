@@ -9,3 +9,5 @@ dist/
 **/.env*
 .DS_Store
 *.log
+!.env.example
+!**/.env.example

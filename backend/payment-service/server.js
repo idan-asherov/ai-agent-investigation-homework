@@ -9,6 +9,12 @@ const SERVICE_NAME = "payment-service";
 
 const memoryLogs = [];
 
+// SCENARIO is the main variable; FAULT is accepted as an alias (value "off" = no fault)
+function getScenario() {
+  const v = process.env.SCENARIO || process.env.FAULT || "none";
+  return v === "off" ? "none" : v;
+}
+
 function log(level, message) {
   const entry = {
     timestamp: new Date().toISOString(),
@@ -25,7 +31,7 @@ log("INFO", `${SERVICE_NAME} v${VERSION} starting on port ${PORT}`);
 
 // 1. כלי בריאות: GET /health
 app.get("/health", (req, res) => {
-  const scenario = process.env.SCENARIO || "none";
+  const scenario = getScenario();
 
   if (scenario === "db_down") {
     log("ERROR", "Healthcheck failed: Database connection pool lost (Connection refused: 27017)");
@@ -61,7 +67,7 @@ app.get("/logs", (req, res) => {
 
 // 4. פעולת סליקה עם 3 תקלות יזומות: /api/pay
 app.all("/api/pay", async (req, res) => {
-  const scenario = process.env.SCENARIO || "none";
+  const scenario = getScenario();
 
   // תקלה 1: תלות חיצונית לא עונה
   if (scenario === "ext_down") {
@@ -102,7 +108,7 @@ app.all("/api/pay", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send(`${SERVICE_NAME} running. Active SCENARIO: ${process.env.SCENARIO || "none"}`);
+  res.send(`${SERVICE_NAME} running. Active SCENARIO: ${getScenario()}`);
 });
 
 app.listen(PORT, () => {

@@ -1,12 +1,12 @@
 import { tool } from "@openai/agents";
 import { z } from "zod";
 
-const BASE_URL = process.env.DEMO_SERVICE_URL || "http://backend:5002";
+const BASE_URL = process.env.PAYMENT_SERVICE_URL || process.env.DEMO_SERVICE_URL || "http://localhost:5002";
 
-async function callDemoService(endpoint) {
+async function callDemoService(endpoint, method = "GET") {
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
-      method: "GET",
+      method,
       headers: { "Content-Type": "application/json" },
       signal: AbortSignal.timeout(5000),
     });
@@ -31,19 +31,20 @@ async function callDemoService(endpoint) {
 
 export const checkServiceHealth = tool({
   name: "check_service_health",
-  description: "Checks payment service health via /health endpoint",
-  parameters: z.object({}).optional(),
+  description: "Checks payment service health via /health and runs a test payment via /api/pay",
+  parameters: z.object({}),
   async execute() {
     console.log("🛠️ check_service_health executed");
     const health = await callDemoService("/health");
-    return { health };
+    const payment = await callDemoService("/api/pay", "POST");
+    return { health, payment };
   },
 });
 
 export const getRecentLogs = tool({
   name: "get_recent_logs",
   description: "Returns recent log lines from /logs endpoint",
-  parameters: z.object({}).optional(),
+  parameters: z.object({}),
   async execute() {
     console.log("🛠️ get_recent_logs executed");
     const result = await callDemoService("/logs");
@@ -64,7 +65,7 @@ export const getRecentLogs = tool({
 export const getProductionInfo = tool({
   name: "get_production_info",
   description: "Returns runtime and container configuration details from /version",
-  parameters: z.object({}).optional(),
+  parameters: z.object({}),
   async execute() {
     console.log("🛠️ get_production_info executed");
     const versionRes = await callDemoService("/version");
@@ -72,7 +73,7 @@ export const getProductionInfo = tool({
     return {
       environment: process.env.NODE_ENV || "production",
       runtime: "Node.js",
-      version: versionRes.body?.version || "1.0.0",
+      serviceVersion: versionRes.body?.version || "1.0.0",
       containerStatus: "running",
       serviceUrl: BASE_URL,
       details: versionRes.body,
