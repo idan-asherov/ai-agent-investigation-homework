@@ -361,3 +361,155 @@ summary:focus-visible {
     animation: none;
   }
 }
+
+/* ---- multi-agent additions ---- */
+.statusbar {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+.statusbar li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-size: 0.9rem;
+}
+.statusbar .model {
+  border: none;
+  background: none;
+  color: var(--muted);
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.chip-up .dot { background: var(--ok); }
+.chip-down .dot { background: var(--bad); }
+.chip-state { color: var(--muted); }
+
+.fault {
+  margin-top: 16px;
+  display: grid;
+  gap: 6px;
+}
+.fault label { font-size: 0.9rem; color: var(--muted); }
+.fault select {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+.rail-title {
+  margin: 28px 0 10px;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.agents { list-style: none; display: grid; gap: 14px; }
+.agent { display: flex; gap: 12px; align-items: flex-start; }
+.agent .node { margin-top: 6px; flex: none; position: static; }
+.agent-name { font-weight: 600; }
+.agent-rounds {
+  margin-inline-start: 8px;
+  font-size: 0.8rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+.agent-desc { font-size: 0.9rem; color: var(--muted); }
+.agent-pending .agent-name { color: var(--muted); }
+.agent-running .node { animation: pulse 1.2s ease-in-out infinite; }
+
+.panel { margin-bottom: 24px; }
+.panel-title { font-size: 1rem; margin-bottom: 10px; }
+.review {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.review-challenge { border-color: #e6b3aa; background: var(--bad-bg); }
+.review-approved { border-color: #b6dcc6; background: var(--ok-bg); }
+.review ul { margin: 6px 0 0; padding-inline-start: 20px; }
+.muted { color: var(--muted); font-size: 0.95rem; }
+
+.verify {
+  margin: 16px 0 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.verify-ok { background: var(--ok-bg); color: var(--ok); }
+.verify-bad { background: var(--bad-bg); color: var(--bad); }
+
+.plan-list { list-style: none; display: grid; gap: 10px; margin-top: 12px; }
+.plan-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.plan-list li > span:first-child { flex: 1 1 260px; }
+.chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.risk-LOW { color: var(--ok); }
+.risk-MEDIUM { color: #8a5a00; }
+.risk-HIGH { color: var(--bad); border-color: #e6b3aa; }
+.chip-approve { color: var(--bad); }
+.chip-free { color: var(--ok); }
+.chip.chip-up { color: var(--ok); background: var(--ok-bg); }
+.chip.chip-down { color: var(--bad); background: var(--bad-bg); }
+
+.saved { margin-top: 24px; font-size: 0.9rem; }
+.saved-ok { color: var(--ok); }
+.saved-bad { color: var(--bad); }
+
+.history { margin-top: 56px; }
+.history h2 { font-family: var(--serif); font-size: 1.6rem; margin-bottom: 12px; }
+.history table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--paper);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.history th, .history td {
+  text-align: start;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+.history th { color: var(--muted); font-weight: 600; background: #f1f5f9; }
+@media (max-width: 860px) {
+  .history { overflow-x: auto; }
+}
+.agent .node { margin-top: 3px; }
+.agent-running .node { border-color: var(--cobalt); background: var(--cobalt); }
+.agent-done .node { border-color: var(--ok); background: var(--ok); color: #fff; }
+.agent-done .node::after { content: "✓"; }
+.agent-failed .node { border-color: var(--bad); background: var(--bad); color: #fff; }
+.agent-failed .node::after { content: "✕"; }
+.steps { margin-top: 0; }
+.rail-title:first-of-type { margin-top: 24px; }

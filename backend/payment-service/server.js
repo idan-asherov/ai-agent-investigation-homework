@@ -10,7 +10,12 @@ const SERVICE_NAME = "payment-service";
 const memoryLogs = [];
 
 // SCENARIO is the main variable; FAULT is accepted as an alias (value "off" = no fault)
+const VALID_SCENARIOS = ["none", "ext_down", "db_down", "latency"];
+// Runtime override set through the admin endpoint (demo / eval only)
+let runtimeScenario = null;
+
 function getScenario() {
+  if (runtimeScenario) return runtimeScenario;
   const v = process.env.SCENARIO || process.env.FAULT || "none";
   return v === "off" ? "none" : v;
 }
@@ -106,6 +111,22 @@ app.all("/api/pay", async (req, res) => {
     currency: "USD",
   });
 });
+
+// Admin: switch the fault scenario without restarting. Disabled unless ENABLE_ADMIN=true.
+if (process.env.ENABLE_ADMIN === "true") {
+  app.get("/admin/scenario", (req, res) => {
+    res.json({ scenario: getScenario(), valid: VALID_SCENARIOS });
+  });
+  app.post("/admin/scenario", (req, res) => {
+    const next = req.body?.scenario;
+    if (!VALID_SCENARIOS.includes(next)) {
+      return res.status(400).json({ error: "Invalid scenario", valid: VALID_SCENARIOS });
+    }
+    runtimeScenario = next;
+    log("WARN", `Admin switched scenario to ${next}`);
+    res.json({ scenario: next });
+  });
+}
 
 app.get("/", (req, res) => {
   res.send(`${SERVICE_NAME} running. Active SCENARIO: ${getScenario()}`);

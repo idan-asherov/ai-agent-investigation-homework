@@ -4,6 +4,7 @@ import { z } from "zod";
 const BASE_URL = process.env.PAYMENT_SERVICE_URL || process.env.DEMO_SERVICE_URL || "http://localhost:5002";
 
 async function callDemoService(endpoint, method = "GET") {
+  const started = Date.now();
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       method,
@@ -20,11 +21,12 @@ async function callDemoService(endpoint, method = "GET") {
       body = { rawResponse: text.slice(0, 150) };
     }
 
-    return { status, body };
+    return { status, body, durationMs: Date.now() - started };
   } catch (error) {
     return {
       status: 500,
       body: { error: `Failed to connect to ${endpoint}: ${error.message}` },
+      durationMs: Date.now() - started,
     };
   }
 }

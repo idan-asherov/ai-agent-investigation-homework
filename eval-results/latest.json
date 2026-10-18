@@ -1,0 +1,130 @@
+[
+  {
+    "expected": "none",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 32806
+  },
+  {
+    "expected": "none",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 37918
+  },
+  {
+    "expected": "ext_down",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 51291
+  },
+  {
+    "expected": "ext_down",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 48071
+  },
+  {
+    "expected": "db_down",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 112165
+  },
+  {
+    "expected": "db_down",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 82978
+  },
+  {
+    "expected": "latency",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": false,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": false,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 75068
+  },
+  {
+    "expected": "latency",
+    "checks": {
+      "classified": true,
+      "agentsAgree": true,
+      "hebrewClean": true,
+      "hasPlan": true,
+      "noRawHighRisk": true,
+      "saved": true,
+      "noError": true
+    },
+    "passed": true,
+    "reviewRounds": 1,
+    "challenged": 0,
+    "ms": 77024
+  }
+]

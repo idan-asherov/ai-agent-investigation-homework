@@ -1,4 +1,19 @@
 services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      # Bound to localhost only, so you can inspect the data with Compass. Remove if not needed.
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend/payment-service
@@ -6,10 +21,12 @@ services:
       - ./backend/payment-service/.env
     environment:
       PORT: "5002"
+      # Lets the UI / eval switch fault scenarios at runtime. Never enable this in production.
+      ENABLE_ADMIN: "true"
     ports:
       - "5002:5002"
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5002/health').then(r=>process.exit(r.status<600?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -25,11 +42,18 @@ services:
       PORT: "3000"
       PAYMENT_SERVICE_URL: http://backend:5002
       OPENAI_BASE_URL: http://host.docker.internal:11434/v1
+      # Local Mongo. Overrides any MONGODB_URI left in .env (e.g. the old Atlas one).
+      MONGODB_URI: mongodb://mongo:27017
     ports:
       - "3000:3000"
     depends_on:
+      mongo:
+        condition: service_healthy
       backend:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+
+volumes:
+  mongo-data:

@@ -39,23 +39,55 @@ Flow:
 `,
 });
 
-// Stage 2: translate the English report to Hebrew (no tools, nothing to decide)
-export const translator = new Agent({
-  name: "Hebrew Translator",
+// Stage 2: translate English text to Hebrew (no tools). Called per report section.
+function makeTranslator(temperature) {
+  return new Agent({
+    name: "Hebrew Translator",
+    model: MODEL,
+    modelSettings: { temperature },
+    instructions: `
+Translate the text you receive into clear, natural Hebrew (עברית).
+Rules:
+- Output ONLY the Hebrew translation. Never write Chinese (中文) or any other language.
+- Keep technical identifiers, paths, status codes, numbers, timestamps and quoted values exactly as written (e.g. /health, 200, 502, payment-service, tx_123).
+- Keep bullet points as bullet points (lines starting with "- ").
+- Do not add, remove or invent facts. No introduction, no notes.
+`,
+  });
+}
+
+// Agent 2: skeptical reviewer. No tools: it only compares the report with the raw tool output.
+export const reviewer = new Agent({
+  name: "Skeptical Reviewer",
   model: MODEL,
   modelSettings: { temperature: 0 },
   instructions: `
-Translate the incident report you receive into clear, natural Hebrew (עברית).
-Rules:
-- Output ONLY the Hebrew translation. Never write Chinese (中文) or any other language.
-- Keep exactly 4 numbered sections with these Hebrew headings:
-  1. מה נבדק
-  2. ראיות
-  3. שורש התקלה
-  4. פעולה מומלצת
-- Keep technical identifiers, paths, status codes, numbers and timestamps exactly as written (e.g. /health, 200, 502, payment-service).
-- Do not add, remove or invent facts.
+You are a skeptical senior SRE reviewing an incident report written by a colleague.
+You receive RAW TOOL OUTPUT and the REPORT. Check every claim in the report against the raw output.
+Reply with ONLY one JSON object, no other text:
+{"verdict":"approved"|"challenge","issues":["short issue 1","short issue 2"]}
+Use "challenge" only if: a claim is not supported by the tool output, the root cause contradicts the status codes,
+a failing status code or error log was ignored, or a required section is missing. Otherwise use "approved" with an empty issues list.
 `,
 });
+
+// Agent 3: remediation planner. No tools: it proposes, a human approves. It never executes anything.
+export const planner = new Agent({
+  name: "Remediation Planner",
+  model: MODEL,
+  modelSettings: { temperature: 0.2 },
+  instructions: `
+You are a remediation planner for an on-call team. You receive an incident report.
+Write at most 4 steps. Each step is ONE line in exactly this format:
+N. <concrete action> | Risk: <LOW|MEDIUM|HIGH> | Approval: <yes|no>
+Rules: any step that changes production needs Approval: yes. Read-only checks may use Approval: no.
+You never claim to have executed anything. If the service is healthy, propose monitoring steps only.
+Output only the numbered lines.
+`,
+});
+
+export const translator = makeTranslator(0);
+// Used for a retry: a different temperature gives a different sample than the first attempt
+export const translatorRetry = makeTranslator(0.4);
 
 export default agent;
