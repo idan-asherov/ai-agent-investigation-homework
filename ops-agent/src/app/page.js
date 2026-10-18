@@ -279,7 +279,7 @@ function Slip({ report, plan, classification, verification, saved, durationMs, c
       {verification ? (
         <p className={`verify ${verification.agrees ? "verify-ok" : "verify-bad"}`}>
           {verification.agrees
-            ? "אימות כפול: מסקנת הסוכנים תואמת את מנוע הכללים, שמסתכל רק על קודי הסטטוס."
+            ? (verification.refereed ? "אימות כפול: הדוח תוקן אחרי שמנוע הכללים הכריע, והוא תואם כעת לקודי הסטטוס." : "אימות כפול: מסקנת הסוכנים תואמת את מנוע הכללים, שמסתכל רק על קודי הסטטוס.")
             : "אימות כפול: יש סתירה בין מסקנת הסוכנים לבין קודי הסטטוס. בדוק ידנית לפני שסומכים על הדוח."}
         </p>
       ) : null}

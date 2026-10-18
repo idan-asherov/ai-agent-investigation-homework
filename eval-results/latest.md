@@ -1,15 +1,12 @@
 # Eval report
 
-Model run at 2026-10-18T18:54:59.088Z
+Model run at 2026-10-18T19:32:36.119Z
 
-**Accuracy: 4/4 (100%)**
+**Accuracy: 1/1 (100%)**
 
 | scenario | result | time | review rounds | classified | agentsAgree | hebrewClean | hasPlan | noRawHighRisk | saved | noError |
 |---|---|---|---|---|---|---|---|---|---|---|
-| none | PASS | 57.3s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ext_down | PASS | 152.1s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| db_down | PASS | 139.0s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| latency | PASS | 107.6s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ext_down | PASS | 24.6s | 2 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Reviewer sanity
 

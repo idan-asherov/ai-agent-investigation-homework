@@ -109,3 +109,32 @@ test("if the retry also fails the report is still delivered with an empty plan",
   const report = (await collect(deps)).find((e) => e.type === "report");
   assert.deepEqual(report.plan, []);
 });
+
+test("a report that contradicts the rule engine is sent back once with the engine's ruling", async () => {
+  const prompts = [];
+  const deps = fakeDeps({ verdicts: ['{"verdict":"approved","issues":[]}'] });
+  const WRONG = "1. What was checked\nhealth\n2. Evidence\nnothing\n3. Root cause\nmystery\n4. Recommended action\nnone";
+  deps.investigate = async (p, onTool) => {
+    prompts.push(p);
+    onTool({ type: "tool_output", tool: TOOL.tool, output: TOOL.output });
+    return { text: prompts.length === 1 ? WRONG : REPORT, toolResults: [TOOL] };
+  };
+  const events = await collect(deps);
+  assert.equal(prompts.length, 2);
+  assert.match(prompts[1], /rule engine/);
+  const v = events.find((e) => e.type === "verification");
+  assert.equal(v.refereed, true);
+  assert.equal(v.agrees, true);
+});
+
+test("the referee runs at most once even if the report still disagrees", async () => {
+  let n = 0;
+  const deps = fakeDeps({ verdicts: ['{"verdict":"approved","issues":[]}'] });
+  deps.investigate = async () => {
+    n++;
+    return { text: "1. What was checked\nx\n2. Evidence\ny\n3. Root cause\nmystery\n4. Recommended action\nz", toolResults: [TOOL] };
+  };
+  const events = await collect(deps);
+  assert.equal(n, 2);
+  assert.equal(events.find((e) => e.type === "verification").agrees, false);
+});

@@ -36,7 +36,10 @@ Flow:
 3. Use get_production_info to inspect the runtime environment.
 4. Status code guide: 200 = healthy (a slow 200 means latency); 502 = the external bank gateway failed;
    503 or database errors in the logs = the database is unavailable.
-5. Write the final report in ENGLISH. Use short, plain sentences (max 15 words each), one fact per bullet,
+5. Logs are HISTORY: they can contain old errors from before the service recovered (for example a line saying the
+   scenario or configuration was switched). The CURRENT state is decided only by the latest /health and /api/pay
+   results. If both are 200 and fast, the service is healthy now: mention old errors as past events, never as the root cause.
+6. Write the final report in ENGLISH. Use short, plain sentences (max 15 words each), one fact per bullet,
    with exactly these 4 sections:
    1. What was checked
    2. Evidence

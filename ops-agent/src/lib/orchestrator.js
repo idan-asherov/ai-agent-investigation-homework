@@ -17,7 +17,23 @@ export function reviewPrompt(toolResults, report) {
 export function revisionPrompt(report, issues) {
   return `${BASE_PROMPT}\n\nA reviewer challenged your previous report.\nPREVIOUS REPORT:\n${report}\n\nISSUES:\n${issues
     .map((i) => `- ${i}`)
-    .join("\n")}\n\nRe-check with the tools if needed and write a corrected report in the same 4-section format.`;
+    .join("\n")}\n\nThe current /health and /api/pay status codes override anything in the logs.\nRe-check with the tools if needed and write a corrected report in the same 4-section format.`;
+}
+
+const CURRENT_STATE = {
+  none: "healthy: everything returns 200 and is fast; old log errors are past events",
+  ext_down: "an external bank gateway failure (payment returns 502)",
+  db_down: "a database outage (503 or database errors on the current checks)",
+  latency: "slow payments (200 but slower than 3 seconds)",
+  unreachable: "the service is unreachable (connection failures)",
+  unknown: "unknown",
+};
+
+// Last resort when the report still contradicts the rule engine: give the investigator the engine's ruling.
+export function refereePrompt(report, classification) {
+  return `${BASE_PROMPT}\n\nA deterministic rule engine that reads only the CURRENT status codes classified the state as: ${
+    CURRENT_STATE[classification.scenario] || classification.scenario
+  } (${(classification.evidence || []).join("; ")}).\nYour previous report contradicts that.\nPREVIOUS REPORT:\n${report}\n\nLogs are history, not the current state. Re-check with the tools and write a corrected report in the same 4-section format that is consistent with the current status codes.`;
 }
 
 // Translate a full report section by section (one bad section never discards the others).
@@ -91,10 +107,19 @@ export async function* orchestrate(deps) {
     yield { type: "agent", agent: "investigator", status: "done", round };
   }
 
-  const verification = {
-    expected: classification.scenario,
-    agrees: matchesDiagnosis(classification.scenario, report),
-  };
+  let agrees = matchesDiagnosis(classification.scenario, report);
+  let refereed = false;
+  if (!agrees && report && classification.scenario !== "unknown") {
+    refereed = true;
+    yield { type: "agent", agent: "investigator", status: "start", round: MAX_REVIEW_ROUNDS + 1, referee: true };
+    const ruled = yield* drive(deps.investigate(refereePrompt(report, classification), onTool), queue);
+    toolResults.push(...ruled.toolResults);
+    if (ruled.text) report = ruled.text;
+    yield { type: "agent", agent: "investigator", status: "done", round: MAX_REVIEW_ROUNDS + 1, referee: true };
+    agrees = matchesDiagnosis(classification.scenario, report);
+  }
+
+  const verification = { expected: classification.scenario, agrees, refereed };
   yield { type: "verification", ...verification };
 
   yield { type: "agent", agent: "planner", status: "start" };

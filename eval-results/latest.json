@@ -1,22 +1,6 @@
 {
   "investigations": [
     {
-      "expected": "none",
-      "checks": {
-        "classified": true,
-        "agentsAgree": true,
-        "hebrewClean": true,
-        "hasPlan": true,
-        "noRawHighRisk": true,
-        "saved": true,
-        "noError": true
-      },
-      "passed": true,
-      "reviewRounds": 1,
-      "challenged": 0,
-      "ms": 57314
-    },
-    {
       "expected": "ext_down",
       "checks": {
         "classified": true,
@@ -28,41 +12,9 @@
         "noError": true
       },
       "passed": true,
-      "reviewRounds": 1,
-      "challenged": 0,
-      "ms": 152092
-    },
-    {
-      "expected": "db_down",
-      "checks": {
-        "classified": true,
-        "agentsAgree": true,
-        "hebrewClean": true,
-        "hasPlan": true,
-        "noRawHighRisk": true,
-        "saved": true,
-        "noError": true
-      },
-      "passed": true,
-      "reviewRounds": 1,
-      "challenged": 0,
-      "ms": 139010
-    },
-    {
-      "expected": "latency",
-      "checks": {
-        "classified": true,
-        "agentsAgree": true,
-        "hebrewClean": true,
-        "hasPlan": true,
-        "noRawHighRisk": true,
-        "saved": true,
-        "noError": true
-      },
-      "passed": true,
-      "reviewRounds": 1,
-      "challenged": 0,
-      "ms": 107632
+      "reviewRounds": 2,
+      "challenged": 1,
+      "ms": 24606
     }
   ],
   "reviewer": [
