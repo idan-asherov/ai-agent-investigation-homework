@@ -1,5 +1,6 @@
 import { Agent, setDefaultOpenAIClient, setOpenAIAPI } from "@openai/agents";
 import OpenAI from "openai";
+import { z } from "zod";
 import {
   checkServiceHealth,
   getRecentLogs,
@@ -56,19 +57,31 @@ Rules:
   });
 }
 
-// Agent 2: skeptical reviewer. No tools: it only compares the report with the raw tool output.
-export const reviewer = new Agent({
-  name: "Skeptical Reviewer",
-  model: MODEL,
-  modelSettings: { temperature: 0 },
-  instructions: `
+const REVIEW_INSTRUCTIONS = `
 You are a skeptical senior SRE reviewing an incident report written by a colleague.
 You receive RAW TOOL OUTPUT and the REPORT. Check every claim in the report against the raw output.
 Reply with ONLY one JSON object, no other text:
 {"verdict":"approved"|"challenge","issues":["short issue 1","short issue 2"]}
 Use "challenge" only if: a claim is not supported by the tool output, the root cause contradicts the status codes,
 a failing status code or error log was ignored, or a required section is missing. Otherwise use "approved" with an empty issues list.
-`,
+`;
+
+// Agent 2: skeptical reviewer. No tools: it only compares the report with the raw tool output.
+// Structured output (JSON schema) makes a small model return a parseable verdict.
+export const reviewer = new Agent({
+  name: "Skeptical Reviewer",
+  model: MODEL,
+  modelSettings: { temperature: 0 },
+  outputType: z.object({ verdict: z.enum(["approved", "challenge"]), issues: z.array(z.string()) }),
+  instructions: REVIEW_INSTRUCTIONS,
+});
+
+// Fallback when the server rejects structured output: same instructions, free text, parsed leniently.
+export const reviewerPlain = new Agent({
+  name: "Skeptical Reviewer (plain)",
+  model: MODEL,
+  modelSettings: { temperature: 0 },
+  instructions: REVIEW_INSTRUCTIONS,
 });
 
 // Agent 3: remediation planner. No tools: it proposes, a human approves. It never executes anything.
@@ -89,5 +102,6 @@ Output only the numbered lines.
 export const translator = makeTranslator(0);
 // Used for a retry: a different temperature gives a different sample than the first attempt
 export const translatorRetry = makeTranslator(0.4);
+export const translatorRetry2 = makeTranslator(0.8);
 
 export default agent;

@@ -2,6 +2,22 @@
 
 export const hasCJK = (t) => /[㐀-鿿]/.test(t || "");
 
+// A translation is accepted only if it is made of Hebrew, plain ASCII (identifiers, numbers) and ordinary
+// punctuation. This rejects Chinese, Japanese, Thai, Korean, Cyrillic, replacement characters and the
+// "Hebrew letter glued to a Latin word" garbage that small models produce.
+const ALLOWED = /^[\u0009\u000A\u000D\u0020-\u007E\u00A0\u0590-\u05FF\u200E\u200F\u2010-\u2027\u2030-\u205E]*$/;
+const GLUED = /[\u05D0-\u05EA][A-Za-z]|[A-Za-z][\u05D0-\u05EA]/;
+export function isCleanHebrew(text) {
+  const t = String(text || "").trim();
+  if (!t) return false;
+  if (!ALLOWED.test(t)) return false;
+  if (GLUED.test(t)) return false;
+  const hebrew = (t.match(/[\u05D0-\u05EA]/g) || []).length;
+  const latin = (t.match(/[A-Za-z]/g) || []).length;
+  if (hebrew === 0 && latin > 12) return false; // returned in English instead of Hebrew
+  return true;
+}
+
 export const SECTIONS = [
   ["What was checked", "מה נבדק"],
   ["Evidence", "ראיות"],
@@ -53,13 +69,30 @@ export function parsePlan(text) {
     if (action.length < 3) continue;
     const risk = (body.match(/risk\W*(low|medium|high)/i)?.[1] || "MEDIUM").toUpperCase();
     const approvalWord = body.match(/approval\W*(yes|no)/i)?.[1]?.toLowerCase();
-    steps.push({
+    const step = {
       n: Number(m[1]),
       action,
       risk,
       // Anything that is not explicitly "no" requires a human, and HIGH risk always does.
       approval: approvalWord !== "no" || risk === "HIGH",
-    });
+    };
+    steps.push(applyRiskRules(step));
   }
   return steps.slice(0, 5);
+}
+
+// The model's own risk labels are inconsistent on small models (a "check" marked HIGH, an "edit" marked LOW),
+// so the safety-relevant part is decided by code: changing something always needs a human,
+// and a pure read-only check never does.
+const MUTATING = /\b(restart|reboot|redeploy|deploy|scale|scaling|rollback|roll back|edit|modify|change|update|apply|delete|remove|drop|reset|failover|kill|stop|start|enable|disable|increase|decrease|implement|reconfigure|patch|migrate|clear|purge|flush|replace|rotate)\b/i;
+const READ_ONLY = /^(check|verify|review|inspect|monitor|look|examine|investigate|confirm|test|validate|read|observe|watch|audit|analy[sz]e|ping|query|view|collect|gather)\b/i;
+const RANK = { LOW: 0, MEDIUM: 1, HIGH: 2 };
+
+export function applyRiskRules(step) {
+  if (MUTATING.test(step.action)) {
+    const risk = RANK[step.risk] >= RANK.MEDIUM ? step.risk : "MEDIUM";
+    return { ...step, risk, approval: true };
+  }
+  if (READ_ONLY.test(step.action)) return { ...step, risk: "LOW", approval: false };
+  return step;
 }

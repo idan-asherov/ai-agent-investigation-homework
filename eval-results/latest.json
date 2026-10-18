@@ -1,130 +1,91 @@
-[
-  {
-    "expected": "none",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
+{
+  "investigations": [
+    {
+      "expected": "none",
+      "checks": {
+        "classified": true,
+        "agentsAgree": true,
+        "hebrewClean": true,
+        "hasPlan": true,
+        "noRawHighRisk": true,
+        "saved": true,
+        "noError": true
+      },
+      "passed": true,
+      "reviewRounds": 1,
+      "challenged": 0,
+      "ms": 57314
     },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 32806
-  },
-  {
-    "expected": "none",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
+    {
+      "expected": "ext_down",
+      "checks": {
+        "classified": true,
+        "agentsAgree": true,
+        "hebrewClean": true,
+        "hasPlan": true,
+        "noRawHighRisk": true,
+        "saved": true,
+        "noError": true
+      },
+      "passed": true,
+      "reviewRounds": 1,
+      "challenged": 0,
+      "ms": 152092
     },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 37918
-  },
-  {
-    "expected": "ext_down",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
+    {
+      "expected": "db_down",
+      "checks": {
+        "classified": true,
+        "agentsAgree": true,
+        "hebrewClean": true,
+        "hasPlan": true,
+        "noRawHighRisk": true,
+        "saved": true,
+        "noError": true
+      },
+      "passed": true,
+      "reviewRounds": 1,
+      "challenged": 0,
+      "ms": 139010
     },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 51291
-  },
-  {
-    "expected": "ext_down",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
+    {
+      "expected": "latency",
+      "checks": {
+        "classified": true,
+        "agentsAgree": true,
+        "hebrewClean": true,
+        "hasPlan": true,
+        "noRawHighRisk": true,
+        "saved": true,
+        "noError": true
+      },
+      "passed": true,
+      "reviewRounds": 1,
+      "challenged": 0,
+      "ms": 107632
+    }
+  ],
+  "reviewer": [
+    {
+      "name": "wrong: blames the database while the bank gateway failed",
+      "expect": "challenge",
+      "got": "challenge",
+      "parsed": true,
+      "ok": true
     },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 48071
-  },
-  {
-    "expected": "db_down",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
+    {
+      "name": "wrong: claims an outage while everything is 200",
+      "expect": "challenge",
+      "got": "challenge",
+      "parsed": true,
+      "ok": true
     },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 112165
-  },
-  {
-    "expected": "db_down",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
-    },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 82978
-  },
-  {
-    "expected": "latency",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": false,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
-    },
-    "passed": false,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 75068
-  },
-  {
-    "expected": "latency",
-    "checks": {
-      "classified": true,
-      "agentsAgree": true,
-      "hebrewClean": true,
-      "hasPlan": true,
-      "noRawHighRisk": true,
-      "saved": true,
-      "noError": true
-    },
-    "passed": true,
-    "reviewRounds": 1,
-    "challenged": 0,
-    "ms": 77024
-  }
-]
+    {
+      "name": "correct: bank gateway 502",
+      "expect": "approved",
+      "got": "challenge",
+      "parsed": true,
+      "ok": false
+    }
+  ]
+}

@@ -1,16 +1,22 @@
 # Eval report
 
-Model run at 2026-10-18T18:13:08.029Z
+Model run at 2026-10-18T18:54:59.088Z
 
-**Accuracy: 7/8 (88%)**
+**Accuracy: 4/4 (100%)**
 
 | scenario | result | time | review rounds | classified | agentsAgree | hebrewClean | hasPlan | noRawHighRisk | saved | noError |
 |---|---|---|---|---|---|---|---|---|---|---|
-| none | PASS | 32.8s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| none | PASS | 37.9s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ext_down | PASS | 51.3s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| ext_down | PASS | 48.1s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| db_down | PASS | 112.2s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| db_down | PASS | 83.0s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| latency | FAIL | 75.1s | 1 | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✓ |
-| latency | PASS | 77.0s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| none | PASS | 57.3s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| ext_down | PASS | 152.1s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| db_down | PASS | 139.0s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| latency | PASS | 107.6s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+## Reviewer sanity
+
+**2/3** correct verdicts
+
+| case | expected | got | result |
+|---|---|---|---|
+| wrong: blames the database while the bank gateway failed | challenge | challenge | PASS |
+| wrong: claims an outage while everything is 200 | challenge | challenge | PASS |
+| correct: bank gateway 502 | approved | challenge | FAIL |

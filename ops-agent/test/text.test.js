@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { hasCJK, splitEnglish, parseVerdict, parsePlan } from "../src/lib/text.js";
+import { hasCJK, isCleanHebrew, applyRiskRules, splitEnglish, parseVerdict, parsePlan } from "../src/lib/text.js";
 
 test("hasCJK detects Chinese and ignores Hebrew/English", () => {
   assert.equal(hasCJK("服务不可用"), true);
@@ -75,9 +75,44 @@ test("parsePlan tolerates markdown, parentheses and lowercase", () => {
 });
 
 test("parsePlan defaults to the safe side when risk and approval are missing", () => {
-  const [s] = parsePlan("1. Review the gateway configuration");
+  const [s] = parsePlan("1. Escalate to the bank provider");
   assert.equal(s.risk, "MEDIUM");
   assert.equal(s.approval, true);
+});
+
+test("a read-only check never needs approval, even if the model labelled it HIGH", () => {
+  const [s] = parsePlan("1. Check database connectivity | Risk: HIGH | Approval: yes");
+  assert.equal(s.risk, "LOW");
+  assert.equal(s.approval, false);
+});
+
+test("a change always needs approval, even if the model labelled it LOW", () => {
+  const [s] = parsePlan("1. Edit the database connection settings | Risk: LOW | Approval: no");
+  assert.equal(s.risk, "MEDIUM");
+  assert.equal(s.approval, true);
+});
+
+test("mutation wins over a leading read-only verb", () => {
+  assert.equal(applyRiskRules({ action: "Check and restart the service", risk: "LOW", approval: false }).approval, true);
+});
+
+test("isCleanHebrew accepts clean Hebrew with identifiers", () => {
+  assert.equal(isCleanHebrew("מצב בריאות של payment-service דרך /health, קוד 503."), true);
+  assert.equal(isCleanHebrew("בדוק את החיבור ל-Mongo בפורט 27017"), true);
+});
+
+test("isCleanHebrew rejects the garbage seen in real model output", () => {
+  assert.equal(isCleanHebrew("רגעים אחרונים מהגדרות ה로그ים"), false); // Korean
+  assert.equal(isCleanHebrew("לタイム Outs של כתיבת הנתונים"), false); // Japanese
+  assert.equal(isCleanHebrew("בדוק את מצבשרתฐาน הנתונים"), false); // Thai
+  assert.equal(isCleanHebrew("בעיה בתETHER של בסיס הנתונים"), false); // Hebrew glued to Latin
+  assert.equal(isCleanHebrew("טקסט עם תו שבור \uFFFD"), false);
+});
+
+test("isCleanHebrew rejects an answer returned in English and empty output", () => {
+  assert.equal(isCleanHebrew("The service is unavailable because of a database failure"), false);
+  assert.equal(isCleanHebrew(""), false);
+  assert.equal(isCleanHebrew(undefined), false);
 });
 
 test("parsePlan returns nothing for prose without numbered steps", () => {

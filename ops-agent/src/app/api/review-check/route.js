@@ -1,5 +1,4 @@
-import { run } from "@openai/agents";
-import { reviewer } from "@/lib/agent.js";
+import { realDeps } from "@/lib/runner.js";
 import { reviewPrompt } from "@/lib/orchestrator.js";
 import { parseVerdict } from "@/lib/text.js";
 
@@ -10,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req) {
   try {
     const { toolResults, report } = await req.json();
-    const out = (await run(reviewer, reviewPrompt(toolResults, report), { maxTurns: 2, signal: AbortSignal.timeout(90000) })).finalOutput;
+    const out = await realDeps().review(reviewPrompt(toolResults, report));
     return Response.json(parseVerdict(out));
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
