@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // End-to-end evaluation of the multi-agent pipeline against the running compose stack.
-// Usage: node scripts/eval.mjs [--runs 2] [--url http://localhost:3000]
+// Usage: node scripts/eval.mjs [--runs 2] [--only db_down] [--skip-reviewer] [--url http://localhost:3000]
 // For every fault scenario it switches the backend, runs a full investigation and scores the result.
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -10,7 +10,11 @@ const arg = (name, def) => {
 };
 const URL_BASE = arg("url", "http://localhost:3000");
 const RUNS = Number(arg("runs", "1"));
-const SCENARIOS = ["none", "ext_down", "db_down", "latency"];
+const ALL = ["none", "ext_down", "db_down", "latency"];
+const ONLY = arg("only", "");
+const SCENARIOS = ONLY ? ALL.filter((s) => ONLY.split(",").includes(s)) : ALL;
+if (!SCENARIOS.length) { console.error(`--only must be one of: ${ALL.join(", ")}`); process.exit(1); }
+const SKIP_REVIEWER = process.argv.includes("--skip-reviewer");
 const hasCJK = (t) => /[㐀-鿿]/.test(t || "");
 
 async function setScenario(scenario) {
@@ -32,7 +36,14 @@ async function investigate() {
     buf += decoder.decode(chunk, { stream: true });
     const lines = buf.split("\n");
     buf = lines.pop();
-    for (const l of lines) if (l.trim()) events.push(JSON.parse(l));
+    for (const l of lines) {
+      if (!l.trim()) continue;
+      const ev = JSON.parse(l);
+      events.push(ev);
+      const t = ((Date.now() - started) / 1000).toFixed(0).padStart(3);
+      if (ev.type === "agent") process.stdout.write(`\n   [${t}s] ${ev.agent} ${ev.status}${ev.round ? " (round " + ev.round + ")" : ""}`);
+      if (ev.type === "review") process.stdout.write(` -> ${ev.verdict}`);
+    }
   }
   return { events, ms: Date.now() - started };
 }
@@ -96,7 +107,7 @@ const REVIEW_CASES = [
   },
 ];
 const reviewResults = [];
-for (const c of REVIEW_CASES) {
+for (const c of SKIP_REVIEWER ? [] : REVIEW_CASES) {
   process.stdout.write(`reviewer: ${c.name} ... `);
   try {
     const r = await fetch(`${URL_BASE}/api/review-check`, {
