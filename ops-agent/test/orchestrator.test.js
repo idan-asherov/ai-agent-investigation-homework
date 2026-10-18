@@ -89,3 +89,23 @@ test("an investigator failure propagates so the route can report an error", asyn
   };
   await assert.rejects(collect(deps), /ollama down/);
 });
+
+test("an unparseable plan is retried once with a stricter prompt", async () => {
+  const deps = fakeDeps({ verdicts: ['{"verdict":"approved","issues":[]}'] });
+  const prompts = [];
+  deps.plan = async (p) => {
+    prompts.push(p);
+    return prompts.length === 1 ? "Just restart it." : "1. Check the gateway | Risk: LOW | Approval: no";
+  };
+  const events = await collect(deps);
+  assert.equal(prompts.length, 2);
+  assert.match(prompts[1], /REMINDER/);
+  assert.equal(events.find((e) => e.type === "report").plan.length, 1);
+});
+
+test("if the retry also fails the report is still delivered with an empty plan", async () => {
+  const deps = fakeDeps({ verdicts: ['{"verdict":"approved","issues":[]}'] });
+  deps.plan = async () => "no format at all";
+  const report = (await collect(deps)).find((e) => e.type === "report");
+  assert.deepEqual(report.plan, []);
+});

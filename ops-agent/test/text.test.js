@@ -63,3 +63,23 @@ test("parsePlan limits the plan to five steps", () => {
   const many = Array.from({ length: 9 }, (_, i) => `${i + 1}. step | Risk: LOW | Approval: no`).join("\n");
   assert.equal(parsePlan(many).length, 5);
 });
+
+test("parsePlan tolerates markdown, parentheses and lowercase", () => {
+  const steps = parsePlan("1) **Check bank gateway DNS** (Risk: low, Approval: no)\n2. `Restart service` - Risk: medium");
+  assert.equal(steps.length, 2);
+  assert.equal(steps[0].action, "Check bank gateway DNS");
+  assert.equal(steps[0].risk, "LOW");
+  assert.equal(steps[0].approval, false);
+  assert.equal(steps[1].risk, "MEDIUM");
+  assert.equal(steps[1].approval, true);
+});
+
+test("parsePlan defaults to the safe side when risk and approval are missing", () => {
+  const [s] = parsePlan("1. Review the gateway configuration");
+  assert.equal(s.risk, "MEDIUM");
+  assert.equal(s.approval, true);
+});
+
+test("parsePlan returns nothing for prose without numbered steps", () => {
+  assert.deepEqual(parsePlan("You should restart the service and check logs."), []);
+});

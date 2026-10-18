@@ -39,20 +39,27 @@ export function parseVerdict(text) {
   return { verdict: "approved", issues: [], parsed: false };
 }
 
-// Parse the remediation planner output: lines like "1. Restart X | Risk: LOW | Approval: yes"
+// Parse the remediation planner output. Small models vary the format, so this is tolerant:
+// "1. Restart X | Risk: LOW | Approval: yes", "1) **Restart X** (Risk: low, Approval: no)", etc.
+// Missing risk defaults to MEDIUM and missing approval defaults to "required" (the safe side).
 export function parsePlan(text) {
   const steps = [];
-  for (const line of String(text || "").split("\n")) {
-    const m = line.match(/^\s*(\d+)[.)]\s*(.+?)\s*\|\s*Risk:\s*(LOW|MEDIUM|HIGH)\s*\|\s*Approval:\s*(yes|no)/i);
-    if (m) {
-      steps.push({
-        n: Number(m[1]),
-        action: m[2].trim(),
-        risk: m[3].toUpperCase(),
-        // Anything that is not explicitly "no" requires a human, and HIGH risk always does.
-        approval: m[4].toLowerCase() !== "no" || m[3].toUpperCase() === "HIGH",
-      });
-    }
+  for (const raw of String(text || "").split("\n")) {
+    const line = raw.replace(/[*`]/g, "").trim();
+    const m = line.match(/^(\d+)\s*[.)]\s*(.+)$/);
+    if (!m) continue;
+    const body = m[2];
+    const action = body.split(/\s*[|(]\s*|\s+-\s+Risk|\s*,?\s*Risk\b/i)[0].trim().replace(/[.;:,]+$/, "");
+    if (action.length < 3) continue;
+    const risk = (body.match(/risk\W*(low|medium|high)/i)?.[1] || "MEDIUM").toUpperCase();
+    const approvalWord = body.match(/approval\W*(yes|no)/i)?.[1]?.toLowerCase();
+    steps.push({
+      n: Number(m[1]),
+      action,
+      risk,
+      // Anything that is not explicitly "no" requires a human, and HIGH risk always does.
+      approval: approvalWord !== "no" || risk === "HIGH",
+    });
   }
   return steps.slice(0, 5);
 }

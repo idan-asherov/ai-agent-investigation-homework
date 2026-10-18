@@ -70,6 +70,51 @@ try {
   await setScenario("none").catch(() => {});
 }
 
+// Reviewer sanity: does the reviewer challenge a deliberately wrong report, and approve a correct one?
+const toolOut = (health, payment) => [
+  { tool: "check_service_health", output: JSON.stringify({ health, payment }) },
+];
+const OK = { status: 200, body: { status: "ok" }, durationMs: 25 };
+const REVIEW_CASES = [
+  {
+    name: "wrong: blames the database while the bank gateway failed",
+    expect: "challenge",
+    tools: toolOut(OK, { status: 502, body: { error: "Bad Gateway" }, durationMs: 30 }),
+    report: "1. What was checked\nHealth and payment.\n2. Evidence\n/health 503, database disconnected.\n3. Root cause\nThe database is down.\n4. Recommended action\nRestart the database.",
+  },
+  {
+    name: "wrong: claims an outage while everything is 200",
+    expect: "challenge",
+    tools: toolOut(OK, { status: 200, body: { status: "success" }, durationMs: 30 }),
+    report: "1. What was checked\nHealth and payment.\n2. Evidence\nPayment returned 502 Bad Gateway.\n3. Root cause\nThe external bank gateway is down.\n4. Recommended action\nEscalate to the bank.",
+  },
+  {
+    name: "correct: bank gateway 502",
+    expect: "approved",
+    tools: toolOut(OK, { status: 502, body: { error: "Bad Gateway" }, durationMs: 30 }),
+    report: "1. What was checked\nHealth and payment.\n2. Evidence\n/health returned 200. /api/pay returned 502 Bad Gateway.\n3. Root cause\nThe external bank gateway is unavailable.\n4. Recommended action\nCheck connectivity to the bank gateway.",
+  },
+];
+const reviewResults = [];
+for (const c of REVIEW_CASES) {
+  process.stdout.write(`reviewer: ${c.name} ... `);
+  try {
+    const r = await fetch(`${URL_BASE}/api/review-check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toolResults: c.tools, report: c.report }),
+    });
+    const v = await r.json();
+    const ok = v.verdict === c.expect;
+    reviewResults.push({ name: c.name, expect: c.expect, got: v.verdict, parsed: v.parsed, ok });
+    console.log(ok ? "PASS" : `FAIL (got ${v.verdict})`);
+  } catch (e) {
+    reviewResults.push({ name: c.name, expect: c.expect, got: "error", ok: false });
+    console.log("FAIL (" + e.message + ")");
+  }
+}
+const reviewPassed = reviewResults.filter((r) => r.ok).length;
+
 const passed = results.filter((r) => r.passed).length;
 const pct = Math.round((passed / results.length) * 100);
 console.log(`\nAccuracy: ${passed}/${results.length} (${pct}%)`);
@@ -80,8 +125,10 @@ md += `| scenario | result | time | review rounds | ${checkNames.join(" | ")} |\
 for (const r of results) {
   md += `| ${r.expected} | ${r.passed ? "PASS" : "FAIL"} | ${(r.ms / 1000).toFixed(1)}s | ${r.reviewRounds} | ${checkNames.map((k) => (r.checks[k] ? "✓" : "✗")).join(" | ")} |\n`;
 }
+md += `\n## Reviewer sanity\n\n**${reviewPassed}/${reviewResults.length}** correct verdicts\n\n| case | expected | got | result |\n|---|---|---|---|\n`;
+for (const r of reviewResults) md += `| ${r.name} | ${r.expect} | ${r.got} | ${r.ok ? "PASS" : "FAIL"} |\n`;
 mkdirSync("eval-results", { recursive: true });
 writeFileSync("eval-results/latest.md", md);
-writeFileSync("eval-results/latest.json", JSON.stringify(results, null, 2));
+writeFileSync("eval-results/latest.json", JSON.stringify({ investigations: results, reviewer: reviewResults }, null, 2));
 console.log("Saved eval-results/latest.md");
-process.exit(passed === results.length ? 0 : 1);
+process.exit(passed === results.length && reviewPassed === reviewResults.length ? 0 : 1);

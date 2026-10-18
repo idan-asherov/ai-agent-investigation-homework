@@ -36,11 +36,12 @@ The backend runs with `ENABLE_ADMIN=true` in compose, so the UI dropdown (or `PO
 
 ```bash
 cd backend/payment-service && npm test     # 6 tests: every fault scenario, admin endpoint, logs
-cd ops-agent && npm test                   # 26 tests: text helpers, rule engine, orchestrator with fake agents
+cd ops-agent && npm test                   # 31 tests: text helpers, rule engine, orchestrator with fake agents
 docker compose up --build -d
 node scripts/eval.mjs --runs 2             # end-to-end: all scenarios against the real model
 ```
 
 The eval switches each scenario, runs a full investigation and checks: correct classification, agents agree with the
 rule engine, Hebrew free of Chinese, a plan exists, HIGH-risk steps need approval, the save to Mongo succeeded.
-The report is written to `eval-results/latest.md`.
+The eval also feeds the reviewer two deliberately wrong reports (it must `challenge`) and one correct report (it must `approve`),
+via `POST /api/review-check`. The report is written to `eval-results/latest.md`.

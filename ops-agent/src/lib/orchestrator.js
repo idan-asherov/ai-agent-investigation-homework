@@ -98,7 +98,14 @@ export async function* orchestrate(deps) {
   yield { type: "verification", ...verification };
 
   yield { type: "agent", agent: "planner", status: "start" };
-  const planEn = parsePlan(await deps.plan(`INCIDENT REPORT:\n${report}`));
+  const planPrompt = `INCIDENT REPORT:\n${report}`;
+  let planEn = parsePlan(await deps.plan(planPrompt));
+  if (!planEn.length) {
+    // One retry with a stricter reminder: small models sometimes ignore the output format.
+    planEn = parsePlan(
+      await deps.plan(`${planPrompt}\n\nREMINDER: output ONLY numbered lines, each exactly: N. <action> | Risk: <LOW|MEDIUM|HIGH> | Approval: <yes|no>`)
+    );
+  }
   yield { type: "agent", agent: "planner", status: "done" };
 
   yield { type: "agent", agent: "translator", status: "start" };
