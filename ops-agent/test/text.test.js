@@ -118,3 +118,9 @@ test("isCleanHebrew rejects an answer returned in English and empty output", () 
 test("parsePlan returns nothing for prose without numbered steps", () => {
   assert.deepEqual(parsePlan("You should restart the service and check logs."), []);
 });
+
+test("isCleanHebrew rejects code-like junk and unbalanced parentheses", () => {
+  assert.equal(isCleanHebrew("בדוק עבור שגיאות או ירידות ב ');"), false);
+  assert.equal(isCleanHebrew("בדוק את השירות (payment-service"), false);
+  assert.equal(isCleanHebrew("בדוק את השירות (payment-service) עכשיו."), true);
+});

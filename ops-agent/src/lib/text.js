@@ -7,11 +7,15 @@ export const hasCJK = (t) => /[㐀-鿿]/.test(t || "");
 // "Hebrew letter glued to a Latin word" garbage that small models produce.
 const ALLOWED = /^[\u0009\u000A\u000D\u0020-\u007E\u00A0\u0590-\u05FF\u200E\u200F\u2010-\u2027\u2030-\u205E]*$/;
 const GLUED = /[\u05D0-\u05EA][A-Za-z]|[A-Za-z][\u05D0-\u05EA]/;
+// Code-like leftovers from a confused model: ');  {}  <>  backslash  pipe  backtick  $  ^  ~
+const JUNK = /[;{}<>|`$^~]|[\\]|'\)|\)'/;
 export function isCleanHebrew(text) {
   const t = String(text || "").trim();
   if (!t) return false;
   if (!ALLOWED.test(t)) return false;
   if (GLUED.test(t)) return false;
+  if (JUNK.test(t)) return false;
+  if ((t.match(/\(/g) || []).length !== (t.match(/\)/g) || []).length) return false;
   const hebrew = (t.match(/[\u05D0-\u05EA]/g) || []).length;
   const latin = (t.match(/[A-Za-z]/g) || []).length;
   if (hebrew === 0 && latin > 12) return false; // returned in English instead of Hebrew

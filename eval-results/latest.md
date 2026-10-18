@@ -1,12 +1,12 @@
 # Eval report
 
-Model run at 2026-10-18T19:32:36.119Z
+Model run at 2026-10-18T19:41:43.909Z
 
 **Accuracy: 1/1 (100%)**
 
 | scenario | result | time | review rounds | classified | agentsAgree | hebrewClean | hasPlan | noRawHighRisk | saved | noError |
 |---|---|---|---|---|---|---|---|---|---|---|
-| ext_down | PASS | 24.6s | 2 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| none | PASS | 31.8s | 1 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Reviewer sanity
 

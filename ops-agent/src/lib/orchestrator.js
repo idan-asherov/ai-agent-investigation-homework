@@ -11,7 +11,10 @@ const clip = (v, n) => {
 
 export function reviewPrompt(toolResults, report) {
   const raw = toolResults.map((r) => `[${r.tool}] ${clip(r.output, 1500)}`).join("\n");
-  return `RAW TOOL OUTPUT:\n${raw}\n\nREPORT:\n${report}`;
+  const state = classify(toolResults);
+  return `RAW TOOL OUTPUT:\n${raw}\n\nCURRENT STATE (computed by code from the status codes): ${
+    CURRENT_STATE[state.scenario] || state.scenario
+  }\n\nREPORT:\n${report}`;
 }
 
 export function revisionPrompt(report, issues) {

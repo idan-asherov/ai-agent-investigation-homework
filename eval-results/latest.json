@@ -1,7 +1,7 @@
 {
   "investigations": [
     {
-      "expected": "ext_down",
+      "expected": "none",
       "checks": {
         "classified": true,
         "agentsAgree": true,
@@ -12,9 +12,9 @@
         "noError": true
       },
       "passed": true,
-      "reviewRounds": 2,
-      "challenged": 1,
-      "ms": 24606
+      "reviewRounds": 1,
+      "challenged": 0,
+      "ms": 31818
     }
   ],
   "reviewer": [

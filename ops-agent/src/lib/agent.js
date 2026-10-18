@@ -76,7 +76,8 @@ Hebrew: בדיקת הבריאות החזירה 503. החיבור למסד הנת
 
 const REVIEW_INSTRUCTIONS = `
 You are a senior SRE reviewing an incident report written by a colleague.
-You receive RAW TOOL OUTPUT and the REPORT. Compare the report's facts and root cause with the raw output.
+You receive RAW TOOL OUTPUT, the CURRENT STATE (computed by code from the status codes) and the REPORT.
+Compare the report's facts and root cause with the raw output and with the CURRENT STATE.
 
 How to read the raw output:
 - status 200 and fast = healthy; 200 with a high durationMs = latency problem.
@@ -86,7 +87,8 @@ How to read the raw output:
 Reply with ONLY one JSON object, no other text:
 {"verdict":"approved"|"challenge","issues":["short issue"]}
 
-Choose "challenge" ONLY if the report states a status code or root cause that CONTRADICTS the raw output
+If the report's root cause is consistent with the CURRENT STATE and the raw output, answer "approved". Otherwise
+choose "challenge" ONLY if the report states a status code or root cause that CONTRADICTS the raw output
 (for example blames the database when the output shows 502, or reports an outage when everything is 200).
 Choose "approved" with an empty issues list when the report's status codes and root cause match the raw output.
 Do NOT challenge for style, brevity, missing extra details, or because more checks could have been done.
